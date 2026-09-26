@@ -55,7 +55,7 @@ async def publish_telemetry(js, route, vehicle_id, speed_range):
         "speed_kph": round(random.uniform(*speed_range)),
         "lat": round(lat, 6),
         "lon": round(lon, 6),
-        "occured_at": round(time.time(), 6)
+        "occurred_at": round(time.time(), 6)
     }
     subject = f"fleet.{route}.{vehicle_id}.telemetry"
     msg_id = str(uuid.uuid4())
@@ -74,7 +74,7 @@ async def publish_disengagement(js, route, vehicle_id):
     payload = {
         "vehicle_id": vehicle_id,
         "reason": reason,
-        "occured_at": round(time.time(), 6)
+        "occurred_at": round(time.time(), 6)
     }
     subject = f"fleet.{route}.{vehicle_id}.disengagement"
     msg_id = str(uuid.uuid4())
@@ -90,7 +90,7 @@ async def publish_malformed(js, route, vehicle_id):
         "vehicle_id": vehicle_id,
         "lat": round(next_vehicle_position(route, vehicle_id)[0], 6),
         "lon": round(next_vehicle_position(route, vehicle_id)[1], 6),
-        "occured_at": round(time.time(), 6)
+        "occurred_at": round(time.time(), 6)
     }
     subject = f"fleet.{route}.{vehicle_id}.telemetry"
     msg_id = str(uuid.uuid4())
