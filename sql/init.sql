@@ -5,7 +5,7 @@ CREATE TABLE telemetry_events (
     speed_kph NUMERIC,
     lat NUMERIC,
     lon NUMERIC,
-    occured_at TIMESTAMPTZ NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL,
     ingested_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

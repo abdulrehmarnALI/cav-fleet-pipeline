@@ -37,7 +37,7 @@
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.6.4</version>
             <configuration>
-                <mainClass>com.sunshine.cavfleet.TestConsume</mainClass>
+                <mainClass>com.sunshine.cavfleet.TestRepository</mainClass>
             </configuration>
         </plugin>
     </plugins>
