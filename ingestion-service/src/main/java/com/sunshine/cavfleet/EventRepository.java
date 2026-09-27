@@ -51,4 +51,21 @@ public class EventRepository {
         ps.executeUpdate();
     }
 }
+
+    public void writeDeadLetter(String msgId, String subject, String rawPayload, String error, String route) throws SQLException {
+        String sql = """
+            INSERT INTO dead_letters (msg_id, subject, raw_payload, error, route)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+
+        try (Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, msgId);
+            ps.setString(2, subject);
+            ps.setString(3, rawPayload);
+            ps.setString(4, error);
+            ps.setString(5, route);
+            ps.executeUpdate();
+        }
+    }
 }

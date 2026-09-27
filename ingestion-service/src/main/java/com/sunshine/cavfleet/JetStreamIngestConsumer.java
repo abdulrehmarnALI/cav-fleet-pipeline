@@ -3,7 +3,9 @@ package com.sunshine.cavfleet;
 import io.nats.client.*;
 import io.nats.client.api.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 
@@ -50,12 +52,22 @@ public class JetStreamIngestConsumer {
                         DisengagementEvent event = mapper.readValue(msg.getData(), DisengagementEvent.class);
                         event.validate();
                         repo.upsertDisengagement(msgId, route, event);
+                    } else {
+                        throw new IllegalArgumentException("Unsupported subject: " + subject);
                     }
                     msg.ack();
                     System.out.println("Ingested: " + subject);
-                } catch (Exception e) {
-                    System.out.println("Failed to process " + subject + ": " + e.getMessage());
+                } catch (JsonProcessingException | IllegalArgumentException e) {
+                    // bad JSON or a validation error - never going to succeed on retry
+                    // write to dead-letter and terminate the message
+                    repo.writeDeadLetter(msgId, subject, new String(msg.getData()), e.getMessage(), route);
+                    msg.term();
+                    System.out.println("Dead-lettered - Failed to ingest: " + subject + " - " + e.getMessage());
+                } catch (SQLException e) {
+                    // database error - might succeed on retry
+                    // this doesn't write to dead-letter because the error might be transient
                     msg.nak();
+                    System.out.println("Nak'd - Failed to ingest due to SQL error: " + subject + " - " + e.getMessage());
                 }
             }
         }
