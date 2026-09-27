@@ -44,9 +44,11 @@ public class JetStreamIngestConsumer {
                 try {
                     if (subject.endsWith(".telemetry")) {
                         TelemetryEvent event = mapper.readValue(msg.getData(), TelemetryEvent.class);
+                        event.validate();
                         repo.upsertTelemetry(msgId, route, event);
                     } else if (subject.endsWith(".disengagement")) {
                         DisengagementEvent event = mapper.readValue(msg.getData(), DisengagementEvent.class);
+                        event.validate();
                         repo.upsertDisengagement(msgId, route, event);
                     }
                     msg.ack();

@@ -4,19 +4,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TelemetryEvent {
+    private static void require(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalArgumentException(message);
+        }
+    }
     private final String vehicleId;
-    private final double lat;
-    private final double lon;
-    private final double speedKph;
-    private final double occurredAt;
+    private final Double lat;
+    private final Double lon;
+    private final Double speedKph;
+    private final Double occurredAt;
 
     @JsonCreator
     public TelemetryEvent(
             @JsonProperty("vehicle_id") String vehicleId,
-            @JsonProperty("lat") double lat,
-            @JsonProperty("lon") double lon,
-            @JsonProperty("speed_kph") double speedKph,
-            @JsonProperty("occurred_at") double occurredAt) {
+            @JsonProperty("lat") Double lat,
+            @JsonProperty("lon") Double lon,
+            @JsonProperty("speed_kph") Double speedKph,
+            @JsonProperty("occurred_at") Double occurredAt) {
         this.vehicleId = vehicleId;
         this.lat = lat;
         this.lon = lon;
@@ -24,9 +29,17 @@ public class TelemetryEvent {
         this.occurredAt = occurredAt;
     }
 
+    public void validate() {
+        require(vehicleId != null, "vehicleId must be non-null");
+        require(lat != null, "lat must be non-null");
+        require(lon != null, "lon must be non-null");
+        require(speedKph != null, "speedKph must be non-null");
+        require(occurredAt != null, "occurredAt must be non-null");
+    }
+
     public String getVehicleId() { return vehicleId; }
-    public double getLat() { return lat; }
-    public double getLon() { return lon; }
-    public double getSpeedKph() { return speedKph; }
-    public double getOccurredAt() { return occurredAt; }
+    public Double getLat() { return lat; }
+    public Double getLon() { return lon; }
+    public Double getSpeedKph() { return speedKph; }
+    public Double getOccurredAt() { return occurredAt; }
 }
