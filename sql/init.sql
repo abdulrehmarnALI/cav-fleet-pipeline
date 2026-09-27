@@ -14,7 +14,7 @@ CREATE TABLE disengagement_events (
     route TEXT NOT NULL,
     vehicle_id TEXT NOT NULL,
     reason TEXT NOT NULL,
-    occured_at TIMESTAMPTZ NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL,
     ingested_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
