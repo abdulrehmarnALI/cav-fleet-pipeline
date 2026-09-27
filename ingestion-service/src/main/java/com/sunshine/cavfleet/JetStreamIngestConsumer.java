@@ -9,7 +9,7 @@ import java.util.List;
 
 public class JetStreamIngestConsumer {
     public static void main(String[] args) throws Exception {
-        Connection nc = Nats.connect("nats://localhost:4222");
+        Connection nc = Nats.connect(Config.NATS_URL);
 
         JetStreamManagement jsm = nc.jetStreamManagement();
         ConsumerConfiguration cc = ConsumerConfiguration.builder()
@@ -27,7 +27,7 @@ public class JetStreamIngestConsumer {
 
         ObjectMapper mapper = new ObjectMapper();
         EventRepository repo = new EventRepository(
-            "jdbc:postgresql://127.0.0.1:5434/cavfleet", "cavfleet", "cavfleet"
+            Config.JDBC_URL, Config.JDBC_USER, Config.JDBC_PASSWORD
         );
 
         System.out.println("Ingestion consumer running - Ctrl+C to stop");

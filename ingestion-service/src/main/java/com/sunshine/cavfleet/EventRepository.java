@@ -8,9 +8,9 @@ public class EventRepository {
     private final String password;
 
     public EventRepository(String jdbcUrl, String user, String password) {
-        this.jdbcUrl = jdbcUrl;
-        this.user = user;
-        this.password = password;
+        this.jdbcUrl = Config.JDBC_URL;
+        this.user = Config.JDBC_USER;
+        this.password = Config.JDBC_PASSWORD;
     }
 
     public void upsertTelemetry(String msgId, String route, TelemetryEvent event) throws SQLException {
