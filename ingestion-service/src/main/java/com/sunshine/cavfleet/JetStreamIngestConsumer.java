@@ -15,12 +15,31 @@ public class JetStreamIngestConsumer {
 
         JetStreamManagement jsm = nc.jetStreamManagement();
         ConsumerConfiguration cc = ConsumerConfiguration.builder()
-            .durable("ingest-consumer")
-            .ackPolicy(AckPolicy.Explicit)
-            .ackWait(Duration.ofSeconds(30))
-            .maxDeliver(5)
-            .filterSubject("fleet.>")
-            .build();
+                .durable("ingest-consumer")
+                .ackPolicy(AckPolicy.Explicit)
+                .ackWait(Duration.ofSeconds(30))
+                .maxDeliver(5)
+                .filterSubject("fleet.>")
+                .build();
+
+        // Ensure the FLEET stream exists (survives a fresh/wiped NATS volume without a
+        // manual CLI step)
+        List<String> streamNames = jsm.getStreamNames();
+        if (!streamNames.contains("FLEET")) {
+            StreamConfiguration sc = StreamConfiguration.builder()
+                    .name("FLEET")
+                    .subjects("fleet.>")
+                    .storageType(StorageType.File)
+                    .retentionPolicy(RetentionPolicy.Limits)
+                    .maxAge(Duration.ofDays(30))
+                    .duplicateWindow(Duration.ofMinutes(2))
+                    .build();
+            jsm.addStream(sc);
+            System.out.println("FLEET stream not found - created it");
+        } else {
+            System.out.println("FLEET stream already exists");
+        }
+        // Add or update the consumer for the FLEET stream
         jsm.addOrUpdateConsumer("FLEET", cc);
 
         JetStream js = nc.jetStream();
@@ -29,8 +48,7 @@ public class JetStreamIngestConsumer {
 
         ObjectMapper mapper = new ObjectMapper();
         EventRepository repo = new EventRepository(
-            Config.JDBC_URL, Config.JDBC_USER, Config.JDBC_PASSWORD
-        );
+                Config.JDBC_URL, Config.JDBC_USER, Config.JDBC_PASSWORD);
 
         System.out.println("Ingestion consumer running - Ctrl+C to stop");
 
@@ -73,7 +91,8 @@ public class JetStreamIngestConsumer {
                     // database error - might succeed on retry
                     // this doesn't write to dead-letter because the error might be transient
                     msg.nak();
-                    System.out.println("Nak'd - Failed to ingest due to SQL error: " + subject + " - " + e.getMessage());
+                    System.out
+                            .println("Nak'd - Failed to ingest due to SQL error: " + subject + " - " + e.getMessage());
                 }
             }
         }
