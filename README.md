@@ -1,7 +1,7 @@
 # CAV Fleet Telemetry Pipeline
 
 A small NATS JetStream event-ingestion pipeline (Java), built to get hands-on
-with durable pull consumers, idempotent writes, and dead-letter handling —
+with durable pull consumers, idempotent writes, and dead-letter handling -
 patterns used in message-driven architectures generally, not specific to
 this toy domain.
 
@@ -9,15 +9,15 @@ this toy domain.
 disengagement ingestion, idempotent writes, dead-letter handling, and
 redelivery-driven idempotency have all been proven against real running
 data, not just reasoned about. Not yet done: a read API, the aggregate
-analytics job, and some smaller polish items — see "What's left" below.
+analytics job, and some smaller polish items - see "What's left" below.
 
 ## What it does
 
 A simulated fleet of autonomous vehicles publishes two kinds of events to a
 NATS JetStream stream:
 
-- `fleet.<route>.<vehicle_id>.telemetry` — speed, lat/lon
-- `fleet.<route>.<vehicle_id>.disengagement` — safety events (autonomy
+- `fleet.<route>.<vehicle_id>.telemetry` - speed, lat/lon
+- `fleet.<route>.<vehicle_id>.disengagement` - safety events (autonomy
   handing control back to a human), with a realistic distribution of causes
 
 A Java consumer durably pulls these off the stream, validates and writes
@@ -39,27 +39,27 @@ publisher.py --> NATS JetStream (FLEET stream) --> JetStreamIngestConsumer
 ```
 
 The consumer creates the `FLEET` stream itself on first run if it's
-missing — no manual NATS CLI setup step required, even after a full
+missing - no manual NATS CLI setup step required, even after a full
 `docker compose down -v`.
 
 ## Why these design choices
 
-- **Pull consumers, not push** — the client controls backpressure by
+- **Pull consumers, not push** - the client controls backpressure by
   fetching batches on demand, rather than the server pushing faster than
   the consumer can handle.
-- **At-least-once delivery + idempotent writes, not exactly-once** —
+- **At-least-once delivery + idempotent writes, not exactly-once** -
   JetStream redelivers if a consumer crashes before acking. Every write is
   `ON CONFLICT (msg_id) DO NOTHING`, so redelivery can never create a
   duplicate row. Proven with a standalone demo (`RedeliveryDemo.java`) that
   forces a real JetStream redelivery via a short `ackWait` and shows the
   second write is a genuine no-op, not just a manual double-insert test.
-- **Dead-letter split by failure type** — a message with bad JSON or a
+- **Dead-letter split by failure type** - a message with bad JSON or a
   missing required field will never succeed on retry, so it's written to
   `dead_letters` and `term()`'d immediately. A database connection issue
   might resolve itself, so those are `nak()`'d for redelivery instead of
   discarded.
 - **`Double` (boxed) over `double` (primitive) for required numeric
-  fields** — a primitive can't be `null`, so a missing JSON field would
+  fields** - a primitive can't be `null`, so a missing JSON field would
   otherwise silently become `0.0` instead of a detectable, catchable error.
 
 ## Running it locally
