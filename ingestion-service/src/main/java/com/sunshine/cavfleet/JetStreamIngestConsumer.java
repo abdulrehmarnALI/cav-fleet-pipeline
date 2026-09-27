@@ -60,7 +60,11 @@ public class JetStreamIngestConsumer {
                 } catch (JsonProcessingException | IllegalArgumentException e) {
                     // bad JSON or a validation error - never going to succeed on retry
                     // write to dead-letter and terminate the message
-                    repo.writeDeadLetter(msgId, subject, new String(msg.getData()), e.getMessage(), route);
+                    try {
+                        repo.writeDeadLetter(msgId, subject, new String(msg.getData()), e.getMessage(), route);
+                    } catch (SQLException ex) {
+                        System.out.println("Failed to write to dead-letter: " + subject + " - " + ex.getMessage());
+                    }
                     msg.term();
                     System.out.println("Dead-lettered - Failed to ingest: " + subject + " - " + e.getMessage());
                 } catch (SQLException e) {
