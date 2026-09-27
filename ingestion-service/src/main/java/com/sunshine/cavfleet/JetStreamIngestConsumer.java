@@ -62,11 +62,13 @@ public class JetStreamIngestConsumer {
                     // write to dead-letter and terminate the message
                     try {
                         repo.writeDeadLetter(msgId, subject, new String(msg.getData()), e.getMessage(), route);
+                        msg.term();
+                        System.out.println("Dead-lettered - Failed to ingest: " + subject + " - " + e.getMessage());
                     } catch (SQLException ex) {
+                        // couldn't write to dead-letter, so nack the message to retry later
+                        msg.nak();
                         System.out.println("Failed to write to dead-letter: " + subject + " - " + ex.getMessage());
                     }
-                    msg.term();
-                    System.out.println("Dead-lettered - Failed to ingest: " + subject + " - " + e.getMessage());
                 } catch (SQLException e) {
                     // database error - might succeed on retry
                     // this doesn't write to dead-letter because the error might be transient
